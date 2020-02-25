@@ -1,5 +1,3 @@
-# sn_cesium
-
 ## Project setup
 ```
 yarn install
