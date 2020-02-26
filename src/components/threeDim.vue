@@ -1,11 +1,11 @@
 <template>
     <div id="cesiumContainer" @mousemove="onCesiumMouseMove($event)">
         <div class="location-bar">
-            <button @click="onFloodAnalyBtnClick">淹没分析</button>
+            <button style="margin: 5px;" @click="onFloodAnalyBtnClick">淹没分析</button>
             <br/>
-            <button @click="onBtnDraw">手动绘制面</button>
+            <button style="margin: 5px;" @click="onBtnDraw">手动绘制面</button>
             <br/>
-            <button @click="onBtnHeatmapClick">热力图</button>
+            <button style="margin: 5px;" @click="onBtnHeatmapClick">热力图</button>
         </div>
         <div class="sub_ana_container" v-if="bShowFloodAnaly">
             <label>最大高度:</label>
@@ -47,9 +47,9 @@
                 linePositionList:[],
                 handler:null,
                 polygonEntities:[],
-                extrudedHeight:300,
                 height_max:800,
                 height_min:300,
+                extrudedHeight:this.height_min,
                 polygon_degrees:[
                     115.8784, 40.0198,
                     115.9473, 40.0381,
@@ -97,40 +97,7 @@
 
                 g_viewer.sceneModePicker.viewModel.duration = 0.0;
 
-                let rectangle = new Cesium.Rectangle(Cesium.Math.toRadians(113.59863),Cesium.Math.toRadians(34.738766),Cesium.Math.toRadians(113.88431),Cesium.Math.toRadians(34.89258));
-
-                g_viewer.scene.camera.flyTo({destination: rectangle});
-
-                g_viewer.screenSpaceEventHandler.setInputAction(
-                    this.onCesiumLeftClick,
-                    Cesium.ScreenSpaceEventType.LEFT_CLICK);
-
-                g_viewer.screenSpaceEventHandler.setInputAction(
-                    this.onCesiumLeftDoubleClick,
-                    Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
-
-                g_viewer._cesiumWidget._creditContainer.style.display = "none";// 隐藏版权
-            },
-            onFloodAnalyBtnClick:function () {
-                this.bShowFloodAnaly = !this.bShowFloodAnaly;
-            },
-            start:function () {
-                this.initViewStatus();
-                this.addDisListener();
-
-                this.timer = window.setInterval(() => {
-                    if ((this.height_max > this.extrudedHeight) && (this.extrudedHeight >= this.height_min)) {
-                        this.extrudedHeight = this.extrudedHeight + this.speed
-                    } else {
-                        this.extrudedHeight = this.height_min
-                    }
-                }, 500);
-                this.drawPoly(this.polygon_degrees)
-            },
-            initViewStatus:function () {
-                let scene = g_viewer.scene;
-                scene.globe.depthTestAgainstTerrain = true;
-                scene.camera.setView({
+                g_viewer.scene.camera.setView({
                     // 摄像头的位置
                     destination: Cesium.Cartesian3.fromDegrees(115.9216, 39.9870, 1500.0),
                     orientation: {
@@ -139,6 +106,55 @@
                         roll: Cesium.Math.toRadians(0)//默认0
                     }
                 });
+
+                /*let rectangle = new Cesium.Rectangle(Cesium.Math.toRadians(113.59863),Cesium.Math.toRadians(34.738766),Cesium.Math.toRadians(113.88431),Cesium.Math.toRadians(34.89258));
+
+                g_viewer.scene.camera.flyTo({destination: rectangle});*/
+
+                g_viewer.screenSpaceEventHandler.setInputAction(
+                    this.onCesiumLeftClick,
+                    Cesium.ScreenSpaceEventType.LEFT_CLICK);
+
+                g_viewer.screenSpaceEventHandler.setInputAction(
+                    this.onCesiumRightClick,
+                    Cesium.ScreenSpaceEventType.RIGHT_CLICK);
+
+                g_viewer._cesiumWidget._creditContainer.style.display = "none";// 隐藏版权
+            },
+            onFloodAnalyBtnClick:function () {
+                this.bShowFloodAnaly = !this.bShowFloodAnaly;
+            },
+            start:function () {
+                debugger;
+                this.extrudedHeight = Number(this.height_min);
+                if((this.polygonPts.length / 2) >= 3){
+                    this.polygon_degrees = this.polygonPts;
+                    g_viewer.entities.remove(this.entity);
+                }
+                this.initViewStatus();
+                this.addDisListener();
+
+                this.timer = window.setInterval(() => {
+                    if ((this.height_max > this.extrudedHeight) && (this.extrudedHeight >= this.height_min)) {
+                        this.extrudedHeight = this.extrudedHeight + this.speed
+                    } else {
+                        this.extrudedHeight = Number(this.height_min);
+                    }
+                }, 500);
+                //this.drawPoly(this.polygon_degrees)
+            },
+            initViewStatus:function () {
+                let scene = g_viewer.scene;
+                scene.globe.depthTestAgainstTerrain = true;
+                /*scene.camera.setView({
+                    // 摄像头的位置
+                    destination: Cesium.Cartesian3.fromDegrees(115.9216, 39.9870, 1500.0),
+                    orientation: {
+                        heading: Cesium.Math.toRadians(0.0),//默认朝北0度，顺时针方向，东是90度
+                        pitch: Cesium.Math.toRadians(-20),//默认朝下看-90,0为水平看，
+                        roll: Cesium.Math.toRadians(0)//默认0
+                    }
+                });*/
                 g_viewer.skyAtmosphere = false;
             },
             addDisListener:function () {
@@ -149,7 +165,7 @@
 
                 // 绘制线
                 this.drawLine(linePositionList);
-                this.loadGrandCanyon();
+                //this.loadGrandCanyon();
 
                 this.drawPoly(this.polygon_degrees);
             },
@@ -194,7 +210,7 @@
                 g_viewer.camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
             },
             //绘制面
-            drawPoly:function (degrees) {
+            drawPoly:function (degrees) {debugger;
                 let entity = g_viewer.entities.add({
                     polygon: {
                         hierarchy: {},
@@ -213,7 +229,7 @@
             },
             onBtnDraw:function () {
                 //g_viewer.scene.morphTo2D(0);
-                this.initViewStatus();
+                //this.initViewStatus();
                 g_viewer.entities.removeAll();
                 this.entity = null;
                 this.bDraw = true;
@@ -241,8 +257,9 @@
                             polygon:{
                                 hierarchy : new Cesium.CallbackProperty(this.updateHierarchy, false),//Cesium.Cartesian3.fromDegreesArray(this.polygonPts),
                                 material: new Cesium.Color.fromBytes(64, 157, 253, 100),
-                                perPositionHeight: true,
-                                extrudedHeight:250
+                                heightReference: Cesium.HeightReference.RELATIVE_TO_GROUND
+                                //perPositionHeight: true,
+                                //extrudedHeight:250
                             }
                         });
                         //this.entity.polygon.hierarchy._value.positions = new Cesium.CallbackProperty(this.updateHierarchy, false);
@@ -261,7 +278,7 @@
                     Cesium.Cartesian3.fromDegreesArray(this.polygonPts),
                     []);
             },
-            onCesiumLeftDoubleClick:function(movement){
+            onCesiumRightClick:function(movement){
                 this.bDraw = false;
                 //g_viewer.scene.morphTo3D(0);
             },

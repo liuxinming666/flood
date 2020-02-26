@@ -4,6 +4,7 @@ export default class SlopElevationAnalysis {
     constructor(viewer) {
         this.viewer = viewer
         this.elevationRamp = [0.0, 0.045, 0.1, 0.15, 0.37, 0.54, 1.0];
+        //this.elevationRamp = [0.0, 0.045,0.046, 0.047, 0.048, 0.049, 1.0];
         this.slopeRamp = [0.0, 0.29, 0.5, Math.sqrt(2) / 2, 0.87, 0.91, 1.0];
         this.minHeight = -414.0; // approximate dead sea elevation
         this.maxHeight = 8777.0; // approximate everest elevation
@@ -250,7 +251,7 @@ export default class SlopElevationAnalysis {
         grd.addColorStop(values[3], '#D33038'); //red
         grd.addColorStop(values[4], '#FF9742'); //orange
         grd.addColorStop(values[5], '#ffd700'); //yellow
-        grd.addColorStop(values[6], '#ffffff'); //white
+        grd.addColorStop(values[6], '#ffffff'); //white*/
 
         ctx.fillStyle = grd;
         ctx.fillRect(0, 0, 100, 1);
@@ -258,6 +259,7 @@ export default class SlopElevationAnalysis {
         return ramp;
     }
     updateMaterial(viewModel) {
+        debugger;
         const viewer = this.viewer
         let shadingUniforms = this.shadingUniforms
         let minHeight = this.minHeight
