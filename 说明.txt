@@ -1,4 +1,4 @@
-cesium 1.54版本
+cesium 1.54版本,lxm
 1.修改源码：
 路径：D:\ly\ab_cesium\SpatialNalysis\sn_cesium\node_modules\cesium\Source\Core\Cartesian3.js
 第422行，注释了，否则 动态更改视域摄像头报错，无法进行渲染
