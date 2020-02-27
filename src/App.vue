@@ -1,16 +1,19 @@
 <template>
   <div id="app">
     <CesiumMap v-if="bShow"></CesiumMap>
-    <three-dim v-if="!bShow"></three-dim>
+    <dyna-spread v-if="!bShow"></dyna-spread>
+    <!--<three-dim v-if="!bShow"></three-dim>-->
       </div>
 </template>
 
 <script>
 import CesiumMap from "./components/CesiumMap.vue"
 import ThreeDim from "./components/threeDim";
+import DynaSpread from "./components/dynaSpread";
 export default {
     name: 'App',
     components : {
+        DynaSpread,
         ThreeDim,
       'CesiumMap' : CesiumMap
     },

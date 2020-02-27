@@ -136,7 +136,7 @@
 
                 this.timer = window.setInterval(() => {
                     if ((this.height_max > this.extrudedHeight) && (this.extrudedHeight >= this.height_min)) {
-                        this.extrudedHeight = this.extrudedHeight + this.speed
+                        this.extrudedHeight = this.extrudedHeight + Number(this.speed);
                     } else {
                         this.extrudedHeight = Number(this.height_min);
                     }
@@ -284,6 +284,7 @@
             },
             onCesiumMouseMove:function (e) {
                 //屏幕坐标
+                debugger;
                 let screenPt = new Cesium.Cartesian2(e.clientX, e.clientY);
 
                 //世界坐标
