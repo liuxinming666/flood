@@ -4,7 +4,13 @@
             <button style="margin: 5px;" @click="onLineSpreadBtnClick">沿线扩散</button>
             <br/>
             <button style="margin: 5px;" @click="onStopBtnClick">停止扩散</button>
+            <br/>
+            <button style="margin: 5px;" @click="onAddGifBtnClick">随机添加动图</button>
+            <br/>
+            <span ref="spanShow" style="color: white;"></span>
         </div>
+        <img ref="imgGif" v-show="bGifShow"
+             style="position: absolute; z-index: 1;" src="/red.gif">
     </div>
 </template>
 
@@ -27,6 +33,10 @@
                 curRouteIndex:1,        //当前路径走到的点
                 timer:null,
                 polyPositions:null,     //当前路径的坐标点
+                bGifShow:false,     //gif图片是否显示
+                gifTop:'300px',
+                gifLeft:'100px',
+                sShow:"",
             }
         },
         mounted:function () {
@@ -193,6 +203,47 @@
                     window.clearInterval(this.timer);
                     this.timer = null;
                 }
+            },
+            //点击了随机添加gif图片按钮
+            onAddGifBtnClick:function () {
+                this.bGifShow = true;
+
+                let htmlOverlay = this.$refs.imgGif;
+                let spanHtml = this.$refs.spanShow;
+                let pos = turf.randomPosition(this.bbox);
+
+
+                /*let scratch = new Cesium.Cartesian2();
+                let canvasPosition = g_viewer.scene.cartesianToCanvasCoordinates(position, scratch);
+
+                if (Cesium.defined(canvasPosition)){
+                    htmlOverlay.style.top = canvasPosition.y + 'px';
+                    htmlOverlay.style.left = canvasPosition.x + 'px';
+                }
+
+                g_viewer.camera.flyTo({
+                    destination: Cesium.Cartesian3.fromDegrees(pos[0], pos[1], 1200)//(108.56211031535, 37.35117012468, 2000000)
+                });*/
+
+                g_viewer.scene.preRender.addEventListener(function () {
+                    debugger;
+                    let position = Cesium.Cartesian3.fromDegrees(
+                        pos[0],
+                        pos[1]);
+
+                    let scratch = new Cesium.Cartesian2();
+                    let canvasPosition = g_viewer.cesiumWidget.scene.cartesianToCanvasCoordinates(position);
+
+                    if (Cesium.defined(canvasPosition)){
+                        htmlOverlay.style.top = canvasPosition.y + 'px';
+                        htmlOverlay.style.left = canvasPosition.x + 'px';
+                        spanHtml.innerHTML = htmlOverlay.style.top + "--" + htmlOverlay.style.left;
+                    }
+                });
+
+                g_viewer.camera.flyTo({
+                    destination: Cesium.Cartesian3.fromDegrees(pos[0], pos[1], 1200)//(108.56211031535, 37.35117012468, 2000000)
+                });
             }
         }
     }
