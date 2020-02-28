@@ -8,9 +8,15 @@
             <button style="margin: 5px;" @click="onAddGifBtnClick">随机添加动图</button>
             <br/>
             <span ref="spanShow" style="color: white;"></span>
+            <br/>
+            <button style="margin: 5px;" @click="onAddMulGifBtnClick">随机添加多个动图</button>
         </div>
         <img ref="imgGif" v-show="bGifShow"
-             style="position: absolute; z-index: 1;" src="/red.gif">
+             style="position: absolute; z-index: 1;top: -20px;left: -20px;" src="/red.gif">
+        <img v-for="(item,index) in gifAry"
+             :ref="'imgGif' + index"
+             src="/red.gif"
+             style="position: absolute; z-index: 1;top: -30px;left: -30px;">
     </div>
 </template>
 
@@ -34,9 +40,8 @@
                 timer:null,
                 polyPositions:null,     //当前路径的坐标点
                 bGifShow:false,     //gif图片是否显示
-                gifTop:'300px',
-                gifLeft:'100px',
-                sShow:"",
+                gifAryLength:10,     //多个gif图片数组的长度
+                gifAry: new Array(10),       //多个gif图片的数组
             }
         },
         mounted:function () {
@@ -139,6 +144,27 @@
                 );
                 this.linePts = lineStrings.features[0].geometry.coordinates;
 
+                //起点绘制动态图标
+                let htmlOverlay = this.$refs.imgGif;
+                let spanHtml = this.$refs.spanShow;
+                let pos = this.linePts[0];
+
+                g_viewer.scene.preRender.addEventListener(function () {
+                    let position = Cesium.Cartesian3.fromDegrees(
+                        pos[0],
+                        pos[1]);
+
+                    let scratch = new Cesium.Cartesian2();
+                    let canvasPosition = g_viewer.cesiumWidget.scene.cartesianToCanvasCoordinates(position);
+
+                    if (Cesium.defined(canvasPosition)){
+                        htmlOverlay.style.top = canvasPosition.y + 'px';
+                        htmlOverlay.style.left = canvasPosition.x + 'px';
+                        spanHtml.innerHTML = htmlOverlay.style.top + "--" + htmlOverlay.style.left;
+                    }
+                });
+                this.bGifShow = true;
+
                 let entity = g_viewer.entities.add({
                     polyline:{
                         positions:Cesium.Cartesian3.fromDegreesArray(
@@ -202,12 +228,11 @@
                     g_viewer.entities.removeAll();
                     window.clearInterval(this.timer);
                     this.timer = null;
+                    this.bGifShow = false;
                 }
             },
             //点击了随机添加gif图片按钮
             onAddGifBtnClick:function () {
-                this.bGifShow = true;
-
                 let htmlOverlay = this.$refs.imgGif;
                 let spanHtml = this.$refs.spanShow;
                 let pos = turf.randomPosition(this.bbox);
@@ -226,7 +251,6 @@
                 });*/
 
                 g_viewer.scene.preRender.addEventListener(function () {
-                    debugger;
                     let position = Cesium.Cartesian3.fromDegrees(
                         pos[0],
                         pos[1]);
@@ -240,9 +264,45 @@
                         spanHtml.innerHTML = htmlOverlay.style.top + "--" + htmlOverlay.style.left;
                     }
                 });
-
+                this.bGifShow = true;
                 g_viewer.camera.flyTo({
                     destination: Cesium.Cartesian3.fromDegrees(pos[0], pos[1], 1200)//(108.56211031535, 37.35117012468, 2000000)
+                });
+            },
+            //点击随机添加多个gif图片按钮
+            onAddMulGifBtnClick:function () {
+                //let htmlOverlay = this.$refs.imgGif;
+                //let spanHtml = this.$refs.spanShow;
+                this.gifAryLength = 100;
+                this.gifAry = new Array(this.gifAryLength);
+                let posAry = [];
+                for(let i=0;i<this.gifAryLength;i++)
+                {
+                    posAry.push(turf.randomPosition(this.bbox));
+                }
+                //let pos = turf.randomPosition(this.bbox);
+                let gifAryLength = this.gifAryLength;
+                debugger;
+                let refs = this.$refs;
+                g_viewer.scene.preRender.addEventListener(function () {
+                    for(let i=0;i<gifAryLength;i++){
+                        let position = Cesium.Cartesian3.fromDegrees(
+                            posAry[i][0],
+                            posAry[i][1]);
+
+                        let canvasPosition = g_viewer.cesiumWidget.scene.cartesianToCanvasCoordinates(position);
+
+                        if (Cesium.defined(canvasPosition)){
+                            let htmlOverlay = refs['imgGif' + i][0];
+                            htmlOverlay.style.top = canvasPosition.y + 'px';
+                            htmlOverlay.style.left = canvasPosition.x + 'px';
+                        }
+                    }
+
+                });
+                this.bGifShow = true;
+                g_viewer.camera.flyTo({
+                    destination: Cesium.Cartesian3.fromDegrees(posAry[0][0], posAry[0][1], 1200)//(108.56211031535, 37.35117012468, 2000000)
                 });
             }
         }
