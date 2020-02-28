@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <CesiumMap v-if="bShow"></CesiumMap>
-    <dyna-spread v-if="!bShow"></dyna-spread>
+    <ThreeDim v-if="!bShow"></ThreeDim>
     <!--<three-dim v-if="!bShow"></three-dim>-->
       </div>
 </template>

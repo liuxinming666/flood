@@ -38,6 +38,7 @@
         name: "threeDim",
         data(){
             return{
+                g_viewer:null,
                 bDraw:true,
                 polygonPts:[],
                 entity:null,
@@ -94,7 +95,7 @@
                     sceneMode: Cesium.SceneMode.SCENE3D//SCENE3D
                 };
                 g_viewer = new Cesium.Viewer('cesiumContainer', viewerOption);
-
+                this.g_viewer = g_viewer;
                 g_viewer.sceneModePicker.viewModel.duration = 0.0;
 
                 g_viewer.scene.camera.setView({
@@ -119,7 +120,21 @@
                     this.onCesiumRightClick,
                     Cesium.ScreenSpaceEventType.RIGHT_CLICK);
 
+                g_viewer.clock.onTick.addEventListener(this.onCesiumTick);
+
+                this.loadGrandCanyon();
+
                 g_viewer._cesiumWidget._creditContainer.style.display = "none";// 隐藏版权
+            },
+            onCesiumTick:function(){
+                if(this.g_viewer.camera.pitch > -0.4){
+                    this.g_viewer.camera.setView({
+                        orientation: {
+                            pitch : -0.4
+                        }
+                    });
+                    //this.g_viewer.scene.screenSpaceCameraController.enableTilt = false;
+                }
             },
             onFloodAnalyBtnClick:function () {
                 this.bShowFloodAnaly = !this.bShowFloodAnaly;
@@ -165,7 +180,7 @@
 
                 // 绘制线
                 this.drawLine(linePositionList);
-                //this.loadGrandCanyon();
+                this.loadGrandCanyon();
 
                 this.drawPoly(this.polygon_degrees);
             },
@@ -283,8 +298,13 @@
                 //g_viewer.scene.morphTo3D(0);
             },
             onCesiumMouseMove:function (e) {
+                /*if(this.g_viewer.camera.pitch > -0.1){
+                    this.g_viewer.scene.screenSpaceCameraController.enableTilt = false;
+                }
+                else{
+                    this.g_viewer.scene.screenSpaceCameraController.enableTilt = true;
+                }*/
                 //屏幕坐标
-                debugger;
                 let screenPt = new Cesium.Cartesian2(e.clientX, e.clientY);
 
                 //世界坐标
@@ -304,7 +324,7 @@
                     }
                 }
 
-                this.coordShow = "经度:" + xx + "  纬度:" + yy + "  高程:" + parseInt(hh) + "米"
+                this.coordShow = "经度:" + xx + "  纬度:" + yy + "  高程:" + parseInt(hh) + "米 角度:" + this.g_viewer.camera.pitch;
             },
             clear:function () {
                 if(this.timer){
@@ -316,7 +336,7 @@
                 for (let eTmp of this.polygonEntities) {
                     g_viewer.entities.remove(eTmp)
                 }
-                g_viewer.skyAtmosphere = true
+                g_viewer.skyAtmosphere = true;
                 g_viewer.scene.globe.clippingPlanes = null;
             },
             onBtnHeatmapClick:function () {
