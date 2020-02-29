@@ -3,6 +3,8 @@
         <div class="location-bar">
             <button style="margin: 5px;" @click="onLineSpreadBtnClick">沿线扩散</button>
             <br/>
+            <button style="margin: 5px;" @click="onPolygonSpreadBtnClick">沿面扩散</button>
+            <br/>
             <button style="margin: 5px;" @click="onStopBtnClick">停止扩散</button>
             <br/>
             <button style="margin: 5px;" @click="onAddGifBtnClick">随机添加动图</button>
@@ -41,7 +43,10 @@
                 polyPositions:null,     //当前路径的坐标点
                 bGifShow:false,     //gif图片是否显示
                 gifAryLength:10,     //多个gif图片数组的长度
-                gifAry: new Array(10),       //多个gif图片的数组
+                gifAry: new Array(10),       //多个gif图片的数组,
+                polygonCanvas:null,     //多边形的画布纹理
+                heatRoutePosAry:[],    //热力图中的行进路线
+                curHeatRoutePosIndex:2,     //当前热力图中行进坐标的索引点
             }
         },
         mounted:function () {
@@ -129,6 +134,175 @@
                         );
                     }
                 }, 10);
+            },
+            //沿着面进行扩散
+            onPolygonSpreadBtnClick:function(){
+                this.onStopBtnClick();
+                g_viewer.entities.removeAll();
+                let polygon = turf.randomPolygon(1,{
+                    bbox:this.bbox,
+                    num_vertices:6,
+                    max_radial_length:3
+                });
+                let polygonPts = polygon.features[0].geometry.coordinates[0];
+                let polygonBox = turf.bbox(polygon.features[0]);
+                let polygonCen = turf.centroid(polygon.features[0]).geometry.coordinates;
+                debugger;
+                let entityBase = g_viewer.entities.add({
+                    polygon:{
+                        hierarchy:new Cesium.PolygonHierarchy(
+                            Cesium.Cartesian3.fromDegreesArray(_.flatten(polygonPts))
+                        ),
+                        material: new Cesium.ColorMaterialProperty(
+                            new Cesium.Color(0, 0, 1, 0.7))
+                    }
+                });
+
+                let entity = g_viewer.entities.add({
+                    polygon:{
+                        hierarchy:new Cesium.PolygonHierarchy(
+                            Cesium.Cartesian3.fromDegreesArray(_.flatten(polygonPts))
+                        ),
+                        material: new Cesium.ImageMaterialProperty({
+                            image: new Cesium.CallbackProperty(
+                                () => this.polygonCanvas, false
+                            ),
+                            transparent: true
+                        })
+                    }
+                });
+
+                //g_viewer.flyTo(entity,{duration:0.001});
+                let rectangle = new Cesium.Rectangle(
+                    Cesium.Math.toRadians(polygonBox[0]),
+                    Cesium.Math.toRadians(polygonBox[1]),
+                    Cesium.Math.toRadians(polygonBox[2]),
+                    Cesium.Math.toRadians(polygonBox[3]));
+
+                g_viewer.scene.camera.flyTo({
+                    destination: rectangle,
+                    duration:0.001
+                });
+                //禁止缩放
+                g_viewer.scene.screenSpaceCameraController.enableZoom = false;
+                this.polygonCanvas = null;
+                this.heatRoutePosAry = [];
+                this.curHeatRoutePosIndex = 2;
+
+                this.timer = window.setInterval(
+                    () =>{this.drawCanvasImage(polygonBox,polygonCen)},
+                    500);
+
+                /*window.setTimeout(() => {
+                    this.drawCanvasImage(polygonBox);
+                }, 500);*/
+            },
+            //绘制多边形纹理图片
+            drawCanvasImage:function(bbox,cenPt){
+                let leftBot = Cesium.Cartesian3.fromDegrees(bbox[0], bbox[1]);
+                let screen_leftBot = Cesium.SceneTransforms.wgs84ToWindowCoordinates(g_viewer.scene, leftBot);
+
+                let rightTop = Cesium.Cartesian3.fromDegrees(bbox[2], bbox[3]);
+                let screen_rightTop = Cesium.SceneTransforms.wgs84ToWindowCoordinates(g_viewer.scene, rightTop);
+                //中心点坐标
+                let center = Cesium.Cartesian3.fromDegrees(cenPt[0], cenPt[1]);
+                let screen_center = Cesium.SceneTransforms.wgs84ToWindowCoordinates(
+                    g_viewer.scene,
+                    center);
+                debugger;
+                //热力图的高度和宽度
+                let heatWidth = Math.abs(screen_rightTop.x - screen_leftBot.x);
+                let heatHeight = Math.abs(screen_rightTop.y - screen_leftBot.y);
+                //热力图的中心点坐标
+                let heatCenterX = heatWidth / 2;
+                let heatCenterY = heatHeight / 2;
+
+                debugger;
+                let heatDoc = document.createElement("div");
+                heatDoc.setAttribute("style", "width:" + heatWidth
+                    + "px;height:" + heatHeight + "px;" +
+                    "margin: 0px;display: none;" + "background-color: #0000FF;");
+                document.body.appendChild(heatDoc);
+
+                let heatmapInstance = h337.create({
+                    // only container is required, the rest will be defaults
+                    container: heatDoc,
+                    backgroundColor: 'rgba(0,0,1,.95)',
+                    gradient: {
+                        // enter n keys between 0 and 1 here
+                        // for gradient color customization
+                        //'.0': 'blue',
+                        '.3': '#00FF00',
+                        '.6': '#FFFF00',
+                        '1': '#FF0000'
+                    },
+                    maxOpacity: .9,
+                    minOpacity: .3,
+                    blur:1
+                });
+
+                let points = [];
+                let max = 0;
+                let width = heatWidth;//screen_rightTop.x - screen_leftBot.x;
+                let height = heatHeight;//screen_rightTop.y - screen_leftBot.y;
+                let len = 100;
+
+                //沿着横坐标前行数据
+                /*max = 100;
+                if(this.heatRoutePosAry.length == 0){
+                    for(let i = 0;i < len;i++){
+                        this.heatRoutePosAry.push([i*(heatWidth/len),heatHeight /2]);
+                    }
+                }
+
+                points.push({
+                    x: this.heatRoutePosAry[this.curHeatRoutePosIndex][0],
+                    y: this.heatRoutePosAry[this.curHeatRoutePosIndex][1],
+                    value: 100
+                });
+
+                points.push({
+                    x: this.heatRoutePosAry[this.curHeatRoutePosIndex - 1][0],
+                    y: this.heatRoutePosAry[this.curHeatRoutePosIndex - 1][1],
+                    value: 60
+                });
+
+                points.push({
+                    x: this.heatRoutePosAry[this.curHeatRoutePosIndex - 2][0],
+                    y: this.heatRoutePosAry[this.curHeatRoutePosIndex - 2][1],
+                    value: 30
+                });
+                this.curHeatRoutePosIndex = this.curHeatRoutePosIndex + 1;
+                if(this.curHeatRoutePosIndex >= (len-1)) {
+                    this.curHeatRoutePosIndex = 2;
+                }*/
+
+
+                //随机生成数据
+                while (len--) {
+                    let val = Math.floor(Math.random()*100);
+                    let radius = Math.floor(Math.random()*100);
+
+                    max = Math.max(max, val);
+                    let point = {
+                        x: Math.floor(Math.random()*width),
+                        y: Math.floor(Math.random()*height),
+                        value: val,
+                        radius: radius
+                    };
+                    points.push(point);
+                }
+
+                let data = {
+                    max: max,
+                    data: points
+                };
+
+                heatmapInstance.setData(data);
+                /*let cxt =canvas.getContext("2d");
+                cxt.fillStyle="#FF0000";
+                cxt.fillRect(0,0,canvas.width,canvas.height);*/
+                this.polygonCanvas = heatmapInstance._renderer.canvas;
             },
             //随机绘制线
             randomLineString:function () {
@@ -225,6 +399,8 @@
             //点击了停止扩散按钮
             onStopBtnClick:function () {
                 if(this.timer){
+                    //允许缩放
+                    g_viewer.scene.screenSpaceCameraController.enableZoom = true;
                     g_viewer.entities.removeAll();
                     window.clearInterval(this.timer);
                     this.timer = null;
