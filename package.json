@@ -12,6 +12,7 @@
     "cesium": "^1.54.0",
     "cesium-heatmap": "^0.0.4",
     "d3": "^5.9.1",
+    "echarts": "^4.6.0",
     "element-ui": "^2.13.0",
     "ladash": "^1.2.0",
     "turf": "^3.0.14",

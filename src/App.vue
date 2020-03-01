@@ -1,8 +1,9 @@
 <template>
   <div id="app">
     <CesiumMap v-if="bShow"></CesiumMap>
+    <cesium-echarts></cesium-echarts>
     <!--<dyna-spread v-if="!bShow"></dyna-spread>-->
-    <weather-sim v-if="!bShow"></weather-sim>
+    <!--<weather-sim v-if="!bShow"></weather-sim>-->
     <!--<ThreeDim v-if="!bShow"></ThreeDim>-->
     <!--<three-dim v-if="!bShow"></three-dim>-->
       </div>
@@ -13,9 +14,11 @@ import CesiumMap from "./components/CesiumMap.vue"
 import ThreeDim from "./components/threeDim";
 import DynaSpread from "./components/dynaSpread";
 import WeatherSim from "./components/weatherSim";
+import CesiumEcharts from "./components/cesiumEcharts";
 export default {
     name: 'App',
     components : {
+        CesiumEcharts,
         WeatherSim,
         DynaSpread,
         ThreeDim,
