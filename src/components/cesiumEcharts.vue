@@ -1,7 +1,10 @@
 <template>
     <div id="cesiumContainer">
-        <div id="main"
-             style="height: 500px;width: 500px;position: absolute;z-index: 1">
+        <!--<div id="main"
+             style="height: 300px;width: 500px;position: absolute;z-index: 1">
+        </div>-->
+        <div ref="chart" style="height: 300px;width: 500px;position: absolute;z-index: 1"
+             class="highcharts-container">
         </div>
     </div>
 </template>
@@ -11,6 +14,18 @@
     import Viewer from "cesium/Source/Widgets/Viewer/Viewer";
     import buildModuleUrl from "cesium/Source/Core/buildModuleUrl";
     import "cesium/Source/Widgets/widgets.css";
+
+    import Highcharts from 'highcharts/highstock';
+    import HighchartsMore from 'highcharts/highcharts-more';
+    import HighchartsDrilldown from 'highcharts/modules/drilldown';
+    import Highcharts3D from 'highcharts/highcharts-3d';
+    import Highmaps from 'highcharts/modules/map';
+
+    HighchartsMore(Highcharts)
+    HighchartsDrilldown(Highcharts);
+    Highcharts3D(Highcharts);
+    Highmaps(Highcharts);
+
     var echarts = require('echarts');
 
     var g_viewer = null;
@@ -19,7 +34,8 @@
         mounted:function () {
             buildModuleUrl.setBaseUrl("../cesium/");
             this.initMap();
-            this.initChart();
+            this.initHightChart();
+            //this.initChart();
         },
         methods:{
             //初始化地图
@@ -103,11 +119,176 @@
                         data: [5, 20, 36, 10, 10, 20]
                     }]
                 });
+            },
+            //初始化hightChart图表
+            initHightChart:function () {
+                let options = {
+                    chart:{
+                        backgroundColor: 'rgba(0,0,0,0)'
+                    },
+                    title: {
+                        text: '2010 ~ 2016 年太阳能行业就业人员发展情况'
+                    },
+                    subtitle: {
+                        text: '数据来源：thesolarfoundation.com'
+                    },
+                    yAxis: {
+                        title: {
+                            text: '就业人数'
+                        }
+                    },
+                    legend: {
+                        layout: 'vertical',
+                        align: 'right',
+                        verticalAlign: 'middle'
+                    },
+                    plotOptions: {
+                        series: {
+                            label: {
+                                connectorAllowed: false
+                            },
+                            pointStart: 2010
+                        }
+                    },
+                    series: [{
+                        name: '安装，实施人员',
+                        data: [43934, 52503, 57177, 69658, 97031, 119931, 137133, 154175]
+                    }, {
+                        name: '工人',
+                        data: [24916, 24064, 29742, 29851, 32490, 30282, 38121, 40434]
+                    }, {
+                        name: '销售',
+                        data: [11744, 17722, 16005, 19771, 20185, 24377, 32147, 39387]
+                    }, {
+                        name: '项目开发',
+                        data: [null, null, 7988, 12169, 15112, 22452, 34400, 34227]
+                    }, {
+                        name: '其他',
+                        data: [12908, 5948, 8105, 11248, 8989, 11816, 18274, 18111]
+                    }],
+                    responsive: {
+                        rules: [{
+                            condition: {
+                                maxWidth: 500
+                            },
+                            chartOptions: {
+                                legend: {
+                                    layout: 'horizontal',
+                                    align: 'center',
+                                    verticalAlign: 'bottom'
+                                }
+                            }
+                        }]
+                    }
+                };
+                let chart = new Highcharts.Chart(this.$refs.chart,{
+                    chart: {
+                        type: 'gauge',
+                        backgroundColor: 'rgba(0,0,0,0)',
+                        plotBackgroundColor: null,
+                        plotBackgroundImage: null,
+                        plotBorderWidth: 0,
+                        plotShadow: false
+                    },
+                    title: {
+                        text: '速度仪'
+                    },
+                    pane: {
+                        startAngle: -150,
+                        endAngle: 150,
+                        background: [{
+                            backgroundColor: {
+                                linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+                                stops: [
+                                    [0, '#FFF'],
+                                    [1, '#333']
+                                ]
+                            },
+                            borderWidth: 0,
+                            outerRadius: '109%'
+                        }, {
+                            backgroundColor: {
+                                linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+                                stops: [
+                                    [0, '#333'],
+                                    [1, '#FFF']
+                                ]
+                            },
+                            borderWidth: 1,
+                            outerRadius: '107%'
+                        }, {
+                            // default background
+                        }, {
+                            backgroundColor: '#DDD',
+                            borderWidth: 0,
+                            outerRadius: '105%',
+                            innerRadius: '103%'
+                        }]
+                    },
+                    // the value axis
+                    yAxis: {
+                        min: 0,
+                        max: 200,
+                        minorTickInterval: 'auto',
+                        minorTickWidth: 1,
+                        minorTickLength: 10,
+                        minorTickPosition: 'inside',
+                        minorTickColor: '#666',
+                        tickPixelInterval: 30,
+                        tickWidth: 2,
+                        tickPosition: 'inside',
+                        tickLength: 10,
+                        tickColor: '#666',
+                        labels: {
+                            step: 2,
+                            rotation: 'auto'
+                        },
+                        title: {
+                            text: 'km/h'
+                        },
+                        plotBands: [{
+                            from: 0,
+                            to: 120,
+                            color: '#55BF3B' // green
+                        }, {
+                            from: 120,
+                            to: 160,
+                            color: '#DDDF0D' // yellow
+                        }, {
+                            from: 160,
+                            to: 200,
+                            color: '#DF5353' // red
+                        }]
+                    },
+                    series: [{
+                        name: 'Speed',
+                        data: [80],
+                        tooltip: {
+                            valueSuffix: ' km/h'
+                        }
+                    }]
+                }, function (chart) {
+                    if (!chart.renderer.forExport) {
+                        setInterval(function () {
+                            var point = chart.series[0].points[0],
+                                newVal,
+                                inc = Math.round((Math.random() - 0.5) * 20);
+                            newVal = point.y + inc;
+                            if (newVal < 0 || newVal > 200) {
+                                newVal = point.y - inc;
+                            }
+                            point.update(newVal);
+                        }, 3000);
+                    }
+                });
             }
         }
     }
 </script>
 
 <style scoped>
-
+    .highcharts-container {
+        width: 100%;
+        height: 100%;
+    }
 </style>
