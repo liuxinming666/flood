@@ -12,10 +12,12 @@
             <span ref="spanShow" style="color: white;"></span>
             <br/>
             <button style="margin: 5px;" @click="onAddMulGifBtnClick">随机添加多个动图</button>
+            <br/>
+            <button style="margin: 5px;" @click="onClearAllGifBtnClick">清除所有动图</button>
         </div>
         <img ref="imgGif" v-show="bGifShow"
              style="position: absolute; z-index: 1;top: -20px;left: -20px;" src="/red.gif">
-        <img v-for="(item,index) in gifAry"
+        <img v-show="bGifShow" v-for="(item,index) in gifAry"
              :ref="'imgGif' + index"
              src="/red.gif"
              style="position: absolute; z-index: 1;top: -30px;left: -30px;">
@@ -46,7 +48,7 @@
                 gifAry: new Array(10),       //多个gif图片的数组,
                 polygonCanvas:null,     //多边形的画布纹理
                 heatRoutePosAry:[],    //热力图中的行进路线
-                curHeatRoutePosIndex:2,     //当前热力图中行进坐标的索引点
+                curHeatRoutePosIndex:7,     //当前热力图中行进坐标的索引点
             }
         },
         mounted:function () {
@@ -142,7 +144,7 @@
                 let polygon = turf.randomPolygon(1,{
                     bbox:this.bbox,
                     num_vertices:6,
-                    max_radial_length:3
+                    max_radial_length:10
                 });
                 let polygonPts = polygon.features[0].geometry.coordinates[0];
                 let polygonBox = turf.bbox(polygon.features[0]);
@@ -187,7 +189,7 @@
                 g_viewer.scene.screenSpaceCameraController.enableZoom = false;
                 this.polygonCanvas = null;
                 this.heatRoutePosAry = [];
-                this.curHeatRoutePosIndex = 2;
+                this.curHeatRoutePosIndex = 7;
 
                 this.timer = window.setInterval(
                     () =>{this.drawCanvasImage(polygonBox,polygonCen)},
@@ -218,11 +220,15 @@
                 let heatCenterY = heatHeight / 2;
 
                 debugger;
-                let heatDoc = document.createElement("div");
-                heatDoc.setAttribute("style", "width:" + heatWidth
-                    + "px;height:" + heatHeight + "px;" +
-                    "margin: 0px;display: none;" + "background-color: #0000FF;");
-                document.body.appendChild(heatDoc);
+                let heatDoc = document.getElementById('divCanvas');
+                if(!heatDoc){
+                    heatDoc = document.createElement("div");
+                    heatDoc.setAttribute("id","divCanvas");
+                    heatDoc.setAttribute("style", "width:" + heatWidth
+                        + "px;height:" + heatHeight + "px;" +
+                        "margin: 0px;display: none;" + "background-color: #0000FF;");
+                    document.body.appendChild(heatDoc);
+                }
 
                 let heatmapInstance = h337.create({
                     // only container is required, the rest will be defaults
@@ -245,10 +251,10 @@
                 let max = 0;
                 let width = heatWidth;//screen_rightTop.x - screen_leftBot.x;
                 let height = heatHeight;//screen_rightTop.y - screen_leftBot.y;
-                let len = 100;
+                let len = 30;
 
                 //沿着横坐标前行数据
-                /*max = 100;
+                max = 100;
                 if(this.heatRoutePosAry.length == 0){
                     for(let i = 0;i < len;i++){
                         this.heatRoutePosAry.push([i*(heatWidth/len),heatHeight /2]);
@@ -264,22 +270,53 @@
                 points.push({
                     x: this.heatRoutePosAry[this.curHeatRoutePosIndex - 1][0],
                     y: this.heatRoutePosAry[this.curHeatRoutePosIndex - 1][1],
-                    value: 60
+                    value: 100
                 });
 
                 points.push({
                     x: this.heatRoutePosAry[this.curHeatRoutePosIndex - 2][0],
                     y: this.heatRoutePosAry[this.curHeatRoutePosIndex - 2][1],
+                    value: 60
+                });
+
+                points.push({
+                    x: this.heatRoutePosAry[this.curHeatRoutePosIndex - 3][0],
+                    y: this.heatRoutePosAry[this.curHeatRoutePosIndex - 3][1],
+                    value: 60
+                });
+
+                points.push({
+                    x: this.heatRoutePosAry[this.curHeatRoutePosIndex - 4][0],
+                    y: this.heatRoutePosAry[this.curHeatRoutePosIndex - 4][1],
+                    value: 60
+                });
+
+                points.push({
+                    x: this.heatRoutePosAry[this.curHeatRoutePosIndex - 5][0],
+                    y: this.heatRoutePosAry[this.curHeatRoutePosIndex - 5][1],
                     value: 30
                 });
+
+                points.push({
+                    x: this.heatRoutePosAry[this.curHeatRoutePosIndex - 6][0],
+                    y: this.heatRoutePosAry[this.curHeatRoutePosIndex - 6][1],
+                    value: 30
+                });
+
+                points.push({
+                    x: this.heatRoutePosAry[this.curHeatRoutePosIndex - 7][0],
+                    y: this.heatRoutePosAry[this.curHeatRoutePosIndex - 7][1],
+                    value: 30
+                });
+
                 this.curHeatRoutePosIndex = this.curHeatRoutePosIndex + 1;
                 if(this.curHeatRoutePosIndex >= (len-1)) {
-                    this.curHeatRoutePosIndex = 2;
-                }*/
+                    this.curHeatRoutePosIndex = 7;
+                }
 
 
                 //随机生成数据
-                while (len--) {
+                /*while (len--) {
                     let val = Math.floor(Math.random()*100);
                     let radius = Math.floor(Math.random()*100);
 
@@ -291,7 +328,7 @@
                         radius: radius
                     };
                     points.push(point);
-                }
+                }*/
 
                 let data = {
                     max: max,
@@ -450,6 +487,7 @@
                 //let htmlOverlay = this.$refs.imgGif;
                 //let spanHtml = this.$refs.spanShow;
                 this.gifAryLength = 100;
+                //this.gifAryLength = Math.floor(Math.random() * 100) + 1;
                 this.gifAry = new Array(this.gifAryLength);
                 let posAry = [];
                 for(let i=0;i<this.gifAryLength;i++)
@@ -477,9 +515,23 @@
 
                 });
                 this.bGifShow = true;
-                g_viewer.camera.flyTo({
+
+                let rectangle = new Cesium.Rectangle(
+                    Cesium.Math.toRadians(93.412690),
+                    Cesium.Math.toRadians(32.596075),
+                    Cesium.Math.toRadians(108.709382),
+                    Cesium.Math.toRadians(42.793593));
+
+                g_viewer.scene.camera.flyTo({destination: rectangle});
+
+                /*g_viewer.camera.flyTo({
                     destination: Cesium.Cartesian3.fromDegrees(posAry[0][0], posAry[0][1], 1200)//(108.56211031535, 37.35117012468, 2000000)
-                });
+                });*/
+            },
+            //点击了清除所有动图按钮
+            onClearAllGifBtnClick:function () {
+                debugger;
+                this.bGifShow = false;
             }
         }
     }

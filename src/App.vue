@@ -1,8 +1,8 @@
 <template>
   <div id="app">
     <CesiumMap v-if="bShow"></CesiumMap>
-    <dyna-spread v-if="!bShow"></dyna-spread>
-    <!--<weather-sim v-if="!bShow"></weather-sim>-->
+    <!--<dyna-spread v-if="!bShow"></dyna-spread>-->
+    <weather-sim v-if="!bShow"></weather-sim>
     <!--<ThreeDim v-if="!bShow"></ThreeDim>-->
     <!--<three-dim v-if="!bShow"></three-dim>-->
       </div>
