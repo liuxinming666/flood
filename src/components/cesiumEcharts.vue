@@ -3,9 +3,9 @@
         <!--<div id="main"
              style="height: 300px;width: 500px;position: absolute;z-index: 1">
         </div>-->
-        <div ref="chart" style="height: 300px;width: 500px;position: absolute;z-index: 1"
+        <!--<div ref="chart" style="height: 300px;width: 500px;position: absolute;z-index: 1"
              class="highcharts-container">
-        </div>
+        </div>-->
     </div>
 </template>
 
@@ -34,21 +34,31 @@
         mounted:function () {
             buildModuleUrl.setBaseUrl("../cesium/");
             this.initMap();
-            this.initHightChart();
+            //this.initHightChart();
             //this.initChart();
         },
         methods:{
             //初始化地图
             initMap:function () {
                 let viewerOption = {
-                    imageryProvider: new Cesium.WebMapTileServiceImageryProvider({
+                    imageryProvider: new Cesium.UrlTemplateImageryProvider({
+                        url: 'http://localhost:9999/gansu/{z}/{x}/{y}.png',
+                        tilingScheme: new Cesium.WebMercatorTilingScheme(),
+                        minimumLevel: 0,
+                        maximumLevel: 11
+                    }),
+                    terrainProvider:new Cesium.CesiumTerrainProvider({
+                        url: 'http://localhost:9999/hongshuiDEM',
+                        requestVertexNormals: true
+                    }),
+                    /*imageryProvider: new Cesium.WebMapTileServiceImageryProvider({
                         url: "http://t0.tianditu.com/img_w/wmts?service=wmts&request=GetTile&version=1.0.0&LAYER=img&tileMatrixSet=w&TileMatrix={TileMatrix}&TileRow={TileRow}&TileCol={TileCol}&style=default&format=tiles&tk=3b6e1ded5e34e4a985ce9167106c62a0",
                         layer: "tdtBasicLayer",
                         style: "default",
                         format: "image/jpeg",
                         tileMatrixSetID: "GoogleMapsCompatible",
                         maximumLevel: 18
-                    }),
+                    }),*/
                     /*terrainProvider:new Cesium.CesiumTerrainProvider({
                         url:"https://lab.earthsdk.com/terrain/577fd5b0ac1f11e99dbd8fd044883638",
                         requestVertexNormals: true,
@@ -67,6 +77,22 @@
                     sceneMode: Cesium.SceneMode.SCENE3D//SCENE3D
                 };
                 g_viewer = new Cesium.Viewer('cesiumContainer', viewerOption);
+
+                g_viewer.imageryLayers.addImageryProvider(
+                    new Cesium.UrlTemplateImageryProvider({
+                    url: 'http://localhost:9999/hongshui/{z}/{x}/{y}.png',
+                    tilingScheme: new Cesium.WebMercatorTilingScheme(),
+                    minimumLevel: 0,
+                    maximumLevel: 17
+                }));
+
+                g_viewer.imageryLayers.addImageryProvider(
+                    new Cesium.UrlTemplateImageryProvider({
+                        url: 'http://localhost:9999/gaoqing/{z}/{x}/{y}.png',
+                        tilingScheme: new Cesium.WebMercatorTilingScheme(),
+                        minimumLevel: 0,
+                        maximumLevel: 22
+                    }));
 
                 g_viewer.sceneModePicker.viewModel.duration = 0.0;
 
