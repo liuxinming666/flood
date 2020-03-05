@@ -1,6 +1,7 @@
 <template>
   <div id="app">
     <CesiumMap v-if="bShow"></CesiumMap>
+    <!--<cesium-mesh-visual></cesium-mesh-visual>-->
     <cesium-echarts></cesium-echarts>
     <!--<dyna-spread v-if="!bShow"></dyna-spread>-->
     <!--<weather-sim v-if="!bShow"></weather-sim>-->
@@ -15,9 +16,11 @@ import ThreeDim from "./components/threeDim";
 import DynaSpread from "./components/dynaSpread";
 import WeatherSim from "./components/weatherSim";
 import CesiumEcharts from "./components/cesiumEcharts";
+import CesiumMeshVisual from "./components/cesiumMeshVisual";
 export default {
     name: 'App',
     components : {
+        CesiumMeshVisual,
         CesiumEcharts,
         WeatherSim,
         DynaSpread,

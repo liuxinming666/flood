@@ -49,6 +49,9 @@
                 polygonCanvas:null,     //多边形的画布纹理
                 heatRoutePosAry:[],    //热力图中的行进路线
                 curHeatRoutePosIndex:7,     //当前热力图中行进坐标的索引点
+                heatWidth:0,        //当前热力图canvas的宽度
+                heatHeight:0,       //当前热力图canvas的高度
+
             }
         },
         mounted:function () {
@@ -137,6 +140,13 @@
                     }
                 }, 10);
             },
+            //休眠函数
+            sleep:function(delay){
+                let start = (new Date()).getTime();
+                while ((new Date()).getTime() - start < delay) {
+                    continue;
+                }
+            },
             //沿着面进行扩散
             onPolygonSpreadBtnClick:function(){
                 this.onStopBtnClick();
@@ -185,11 +195,15 @@
                     destination: rectangle,
                     duration:0.001
                 });
+
+
                 //禁止缩放
-                g_viewer.scene.screenSpaceCameraController.enableZoom = false;
+                //g_viewer.scene.screenSpaceCameraController.enableZoom = false;
                 this.polygonCanvas = null;
                 this.heatRoutePosAry = [];
                 this.curHeatRoutePosIndex = 7;
+                this.heatWidth = 0;
+                this.heatHeight = 0;
 
                 this.timer = window.setInterval(
                     () =>{this.drawCanvasImage(polygonBox,polygonCen)},
@@ -199,22 +213,27 @@
                     this.drawCanvasImage(polygonBox);
                 }, 500);*/
             },
-            //绘制多边形纹理图片
+            //绘制多边形纹理图片bbox
             drawCanvasImage:function(bbox,cenPt){
-                let leftBot = Cesium.Cartesian3.fromDegrees(bbox[0], bbox[1]);
-                let screen_leftBot = Cesium.SceneTransforms.wgs84ToWindowCoordinates(g_viewer.scene, leftBot);
+                if((this.heatWidth == 0) && (this.heatHeight == 0)){
+                    let leftBot = Cesium.Cartesian3.fromDegrees(bbox[0], bbox[1]);
+                    let screen_leftBot = Cesium.SceneTransforms.wgs84ToWindowCoordinates(g_viewer.scene, leftBot);
 
-                let rightTop = Cesium.Cartesian3.fromDegrees(bbox[2], bbox[3]);
-                let screen_rightTop = Cesium.SceneTransforms.wgs84ToWindowCoordinates(g_viewer.scene, rightTop);
-                //中心点坐标
-                let center = Cesium.Cartesian3.fromDegrees(cenPt[0], cenPt[1]);
-                let screen_center = Cesium.SceneTransforms.wgs84ToWindowCoordinates(
-                    g_viewer.scene,
-                    center);
-                debugger;
+                    let rightTop = Cesium.Cartesian3.fromDegrees(bbox[2], bbox[3]);
+                    let screen_rightTop = Cesium.SceneTransforms.wgs84ToWindowCoordinates(g_viewer.scene, rightTop);
+                    //中心点坐标
+                    let center = Cesium.Cartesian3.fromDegrees(cenPt[0], cenPt[1]);
+                    let screen_center = Cesium.SceneTransforms.wgs84ToWindowCoordinates(
+                        g_viewer.scene,
+                        center);
+
+                    this.heatWidth = Math.abs(screen_rightTop.x - screen_leftBot.x);
+                    this.heatHeight = Math.abs(screen_rightTop.y - screen_leftBot.y);
+                }
+
                 //热力图的高度和宽度
-                let heatWidth = Math.abs(screen_rightTop.x - screen_leftBot.x);
-                let heatHeight = Math.abs(screen_rightTop.y - screen_leftBot.y);
+                let heatWidth = this.heatWidth;
+                let heatHeight = this.heatHeight;
                 //热力图的中心点坐标
                 let heatCenterX = heatWidth / 2;
                 let heatCenterY = heatHeight / 2;
@@ -254,7 +273,8 @@
                 let len = 30;
 
                 //沿着横坐标前行数据
-                max = 100;
+                /*max = 100;
+                let radius = 50;
                 if(this.heatRoutePosAry.length == 0){
                     for(let i = 0;i < len;i++){
                         this.heatRoutePosAry.push([i*(heatWidth/len),heatHeight /2]);
@@ -264,59 +284,67 @@
                 points.push({
                     x: this.heatRoutePosAry[this.curHeatRoutePosIndex][0],
                     y: this.heatRoutePosAry[this.curHeatRoutePosIndex][1],
-                    value: 100
+                    value: 100,
+                    radius: radius
                 });
 
                 points.push({
                     x: this.heatRoutePosAry[this.curHeatRoutePosIndex - 1][0],
                     y: this.heatRoutePosAry[this.curHeatRoutePosIndex - 1][1],
-                    value: 100
+                    value: 100,
+                    radius: radius
                 });
 
                 points.push({
                     x: this.heatRoutePosAry[this.curHeatRoutePosIndex - 2][0],
                     y: this.heatRoutePosAry[this.curHeatRoutePosIndex - 2][1],
-                    value: 60
+                    value: 60,
+                    radius: radius
                 });
 
                 points.push({
                     x: this.heatRoutePosAry[this.curHeatRoutePosIndex - 3][0],
                     y: this.heatRoutePosAry[this.curHeatRoutePosIndex - 3][1],
-                    value: 60
+                    value: 60,
+                    radius: radius
                 });
 
                 points.push({
                     x: this.heatRoutePosAry[this.curHeatRoutePosIndex - 4][0],
                     y: this.heatRoutePosAry[this.curHeatRoutePosIndex - 4][1],
-                    value: 60
+                    value: 60,
+                    radius: radius
                 });
 
                 points.push({
                     x: this.heatRoutePosAry[this.curHeatRoutePosIndex - 5][0],
                     y: this.heatRoutePosAry[this.curHeatRoutePosIndex - 5][1],
-                    value: 30
+                    value: 30,
+                    radius: radius
                 });
 
                 points.push({
                     x: this.heatRoutePosAry[this.curHeatRoutePosIndex - 6][0],
                     y: this.heatRoutePosAry[this.curHeatRoutePosIndex - 6][1],
-                    value: 30
+                    value: 30,
+                    radius: radius
                 });
 
                 points.push({
                     x: this.heatRoutePosAry[this.curHeatRoutePosIndex - 7][0],
                     y: this.heatRoutePosAry[this.curHeatRoutePosIndex - 7][1],
-                    value: 30
+                    value: 30,
+                    radius: radius
                 });
 
                 this.curHeatRoutePosIndex = this.curHeatRoutePosIndex + 1;
                 if(this.curHeatRoutePosIndex >= (len-1)) {
                     this.curHeatRoutePosIndex = 7;
-                }
+                }*/
 
 
                 //随机生成数据
-                /*while (len--) {
+                while (len--) {
                     let val = Math.floor(Math.random()*100);
                     let radius = Math.floor(Math.random()*100);
 
@@ -328,7 +356,7 @@
                         radius: radius
                     };
                     points.push(point);
-                }*/
+                }
 
                 let data = {
                     max: max,
