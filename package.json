@@ -14,7 +14,7 @@
     "d3": "^5.9.1",
     "echarts": "^4.6.0",
     "element-ui": "^2.13.0",
-    "highcharts": "^8.0.0",
+    "highcharts": "^8.1.1",
     "ladash": "^1.2.0",
     "turf": "^3.0.14",
     "vue": "^2.6.6"
